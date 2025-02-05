@@ -16,13 +16,13 @@ lazy_static! {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ImageFile<'a> {
-    id: &'a str,
+pub struct ImageFile {
+    id: String,
     bytes: Vec<u8>,
 }
 
 #[tauri::command]
-pub fn extract(images: Vec<ImageFile>) -> ExtractResult {
+pub async fn extract(images: Vec<ImageFile>) -> ExtractResult {
     engine.extract_track_number(images)
 }
 
