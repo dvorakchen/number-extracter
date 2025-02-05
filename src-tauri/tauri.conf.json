@@ -13,10 +13,8 @@
     "windows": [
       {
         "title": "跟踪单号提取",
-        "height": 1200,
-        "width": 1600,
-        "minHeight": 1200,
-        "minWidth": 1600
+        "minHeight": 768,
+        "minWidth": 1200
       }
     ],
     "security": {
@@ -32,6 +30,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "resources": [
+      "./rtens"
     ]
   }
 }
