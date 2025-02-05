@@ -7,6 +7,11 @@ fn hash_file(bytes: Vec<u8>) -> String {
     hash.to_string()
 }
 
+#[tauri::command]
+fn core_nums() -> usize {
+    num_cpus::get()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -15,7 +20,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             hash_file,
             extract::extract,
-            excel::create_write_excel
+            excel::create_write_excel,
+            core_nums
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

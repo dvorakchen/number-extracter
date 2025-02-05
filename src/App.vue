@@ -14,7 +14,7 @@ import {
 const selectImgs = useTemplateRef("selectImgs");
 
 const allowExtract = computed(() => {
-  return imgList.value.length > 0;
+  return !loadingImgs.value && imgList.value.length > 0;
 });
 const loadingImgs = ref(false);
 const extracting = ref(false);
@@ -52,6 +52,7 @@ function handleRemoveFile(file: SelectedImage) {
 
 async function handleExtract() {
   extracting.value = true;
+
   nextTick(async () => {
     const preImages = await Promise.all(
       imgList.value.map(async (img) => {
@@ -60,29 +61,49 @@ async function handleExtract() {
       })
     );
 
-    // preImages.forEach(img => {
+    const coreNums = await invoke("core_nums");
 
-    // });
+    setTimeout(async function foo() {
+      if (preImages.length === 0) {
+        extracting.value = false;
+        return;
+      }
 
-    const resp: {
-      success: { id: string; track_number: string }[];
-      fail: string[];
-    } = await invoke("extract", { images: preImages });
+      let count = 0;
+      let temp = [];
+      while (preImages.length > 0) {
+        temp.push(preImages.shift());
+        count++;
+        if (count === coreNums) {
+          break;
+        }
+      }
 
-    resultList.value = new ImageResult(
-      resp.success.map(
-        (e) =>
-          new SuccessResp(
-            e.id,
-            e.track_number,
-            imgList.value.find((img) => img.id === e.id)!.file
-          )
-      ),
-      resp.fail.map(
-        (e) => new FailResp(e, imgList.value.find((img) => img.id === e)!.file)
-      )
-    );
-    extracting.value = false;
+      const resp: {
+        success: { id: string; track_number: string }[];
+        fail: string[];
+      } = await invoke("extract", { images: temp });
+
+      resultList.value.success.push(
+        ...resp.success.map(
+          (e) =>
+            new SuccessResp(
+              e.id,
+              e.track_number,
+              imgList.value.find((img) => img.id === e.id)!.file
+            )
+        )
+      );
+
+      resultList.value.fail.push(
+        ...resp.fail.map(
+          (e) =>
+            new FailResp(e, imgList.value.find((img) => img.id === e)!.file)
+        )
+      );
+
+      setTimeout(foo, 0);
+    }, 0);
   });
 }
 
@@ -150,7 +171,7 @@ function handleCleanFail() {
         class="absolute inset-0 bg-gray-400/50 flex flex-col gap-2 items-center justify-center"
         v-show="extracting"
       >
-        <div>
+        <div class="bg-gray-50/70 rounded p-2">
           提取中
           <span class="loading loading-spinner text-accent"></span>
         </div>
