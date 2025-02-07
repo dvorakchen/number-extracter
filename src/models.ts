@@ -11,8 +11,16 @@ export class SuccessResp {
   constructor(
     public id: string,
     public trackNumber: string,
-    public file: File
+    public file: File,
+    public rect: Rectangle
   ) {}
+}
+
+export class Rectangle {
+  public top: number = 0;
+  public right: number = 0;
+  public bottom: number = 0;
+  public left: number = 0;
 }
 
 export class FailResp {

@@ -7,7 +7,7 @@ use std::{
 
 use image::{ImageFormat, ImageReader};
 use lazy_static::lazy_static;
-use ocrs::{ImageSource, OcrEngine, OcrEngineParams};
+use ocrs::{ImageSource, OcrEngine, OcrEngineParams, TextItem};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -69,18 +69,7 @@ impl Extracter {
                 _ => fa_list_lock.push(id),
             }
         });
-        // for image in images {
-        //     let id = image.id.to_string();
-        //     match self.extract_per_image(image) {
-        //         Ok(Some(extracted_img)) => extracted_list.push(extracted_img),
-        //         Err(e) => {
-        //             failed_list.push(id);
 
-        //             println!("{:?}", e);
-        //         }
-        //         _ => failed_list.push(id),
-        //     }
-        // }
         let success = {
             let t = Arc::into_inner(extracted_list).unwrap();
             t.into_inner().unwrap()
@@ -121,6 +110,7 @@ impl Extracter {
                     return Ok(Some(SuccessResp {
                         id: file.id.to_string(),
                         track_number: s,
+                        rect: line.words().next().unwrap().into(),
                     }));
                 } else {
                     return Ok(None);
@@ -149,6 +139,7 @@ impl Extracter {
                     return Ok(Some(SuccessResp {
                         id: file.id.to_string(),
                         track_number: rest.to_string(),
+                        rect: line.words().next().unwrap().into(),
                     }));
                 }
             }
@@ -156,6 +147,8 @@ impl Extracter {
 
         Ok(None)
     }
+
+    // fn draw_return(line: &TextLine, img: DynamicImage) {}
 }
 
 pub type Id = String;
@@ -164,6 +157,36 @@ pub type Id = String;
 pub struct SuccessResp {
     pub id: Id,
     pub track_number: String,
+    pub rect: Rectangle,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Rectangle {
+    pub top_left: Point,
+    pub bottom_right: Point,
+}
+
+impl<'a> From<ocrs::TextWord<'a>> for Rectangle {
+    fn from(value: ocrs::TextWord<'a>) -> Self {
+        let rect = value.bounding_rect();
+
+        Self {
+            top_left: Point {
+                x: rect.top_left().x as usize,
+                y: rect.top_left().y as usize,
+            },
+            bottom_right: Point {
+                x: rect.bottom_right().x as usize,
+                y: rect.bottom_right().y as usize,
+            },
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Point {
+    pub x: usize,
+    pub y: usize,
 }
 
 #[derive(Serialize, Deserialize)]

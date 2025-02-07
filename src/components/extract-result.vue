@@ -13,6 +13,7 @@ import { ImageResult } from "../models";
 import { url } from "../utilities";
 import { save } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
+import ImgRect from "./img-rect.vue";
 
 function handleCopy(ev: MouseEvent, trackNumber: string) {
   navigator.clipboard.writeText(trackNumber);
@@ -82,9 +83,7 @@ async function handleExportExcel() {
         <li :key="img.id">
           <div class="flex items-center gap-2">
             <div class="flex items-center" v-show="!img.hide">
-              <span class="pt-4 border-t w-28">
-                <img :src="url(img.file)" :alt="img.trackNumber" />
-              </span>
+              <ImgRect :file="img.file" :trackNumber="img.trackNumber" :rect="img.rect" />
               <div class="grow text-3xl">
                 {{ img.trackNumber }}
                 <button

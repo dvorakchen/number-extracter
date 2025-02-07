@@ -80,7 +80,20 @@ async function handleExtract() {
       }
 
       const resp: {
-        success: { id: string; track_number: string }[];
+        success: {
+          id: string;
+          track_number: string;
+          rect: {
+            top_left: {
+              x: number;
+              y: number;
+            };
+            bottom_right: {
+              x: number;
+              y: number;
+            };
+          };
+        }[];
         fail: string[];
       } = await invoke("extract", { images: temp });
 
@@ -90,7 +103,13 @@ async function handleExtract() {
             new SuccessResp(
               e.id,
               e.track_number,
-              imgList.value.find((img) => img.id === e.id)!.file
+              imgList.value.find((img) => img.id === e.id)!.file,
+              {
+                top: e.rect.top_left.y,
+                right: e.rect.bottom_right.x,
+                bottom: e.rect.bottom_right.y,
+                left: e.rect.top_left.x,
+              }
             )
         )
       );
